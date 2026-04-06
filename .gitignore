@@ -1,0 +1,5 @@
+# Database configuration (contains sensitive credentials)
+db.php
+
+# Local database exports/dumps
+anime_db.sql
