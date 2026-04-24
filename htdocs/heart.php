@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $anime_id = (int)($_POST['anime_id'] ?? 0);
 $user_id  = (int)$_SESSION['user_id'];
 
-if (!$anime_id) { header('Location: home.php'); exit(); }
+if (!$anime_id) {header('Location: mylist.php'); exit();}
 
 // Toggle heart
 $check = $pdo->prepare("SELECT id FROM anime_hearts WHERE anime_id = ? AND user_id = ?");
@@ -28,5 +28,5 @@ if ($check->fetch()) {
     $_SESSION['flash_type'] = 'success';
 }
 
-header('Location: home.php'); exit();
+header('Location: mylist.php'); exit();
 ?>

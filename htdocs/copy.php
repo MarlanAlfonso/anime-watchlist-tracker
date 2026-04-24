@@ -2,6 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 require 'auth_guard.php';
 require 'db.php';
+require 'helpers.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: browse.php');
@@ -20,14 +21,14 @@ $stmt->execute([$anime_id]);
 $original = $stmt->fetch();
 
 if (!$original) {
-    $_SESSION['flash'] = "❌ Anime not found.";
+    setFlash('❌ Anime not found.', 'danger');
     header('Location: browse.php');
     exit();
 }
 
 // ── Prevent copying your own entry ──────────────────────
 if ((int)$original['user_id'] === (int)$_SESSION['user_id']) {
-    $_SESSION['flash'] = "⚠️ That's already your own entry!";
+    setFlash('⚠️ That\'s already your own entry!', 'warning');
     header('Location: browse.php');
     exit();
 }
@@ -36,17 +37,17 @@ if ((int)$original['user_id'] === (int)$_SESSION['user_id']) {
 $check = $pdo->prepare("SELECT id FROM anime_watchlist WHERE user_id = ? AND title = ?");
 $check->execute([$_SESSION['user_id'], $original['title']]);
 if ($check->fetch()) {
-    $_SESSION['flash'] = "⚠️ '{$original['title']}' is already in your list!";
-    header('Location: index.php');
+    setFlash("⚠️ '{$original['title']}' is already in your list!", 'warning');
+    header('Location: browse.php');
     exit();
 }
 
 // ── Copy image file ──────────────────────────────────────
 $new_cover = 'default_cover.png';
-if ($original['cover_image'] !== 'default_cover.png' && file_exists('uploads/'.$original['cover_image'])) {
+if ($original['cover_image'] !== 'default_cover.png' && file_exists('uploads/' . $original['cover_image'])) {
     $ext       = pathinfo($original['cover_image'], PATHINFO_EXTENSION);
     $new_cover = uniqid('cover_', true) . '.' . $ext;
-    copy('uploads/'.$original['cover_image'], 'uploads/'.$new_cover);
+    copy('uploads/' . $original['cover_image'], 'uploads/' . $new_cover);
 }
 
 // ── Insert copy into DB ──────────────────────────────────
@@ -63,7 +64,7 @@ $insert->execute([
     $new_cover
 ]);
 
-$_SESSION['flash'] = "✅ '{$original['title']}' copied to your list!";
-header('Location: index.php');
+setFlash("✅ '{$original['title']}' copied to your list!", 'success');
+header('Location: mylist.php');
 exit();
 ?>
